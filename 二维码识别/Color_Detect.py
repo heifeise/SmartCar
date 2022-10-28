@@ -1,25 +1,21 @@
 import cv2
 import pyzbar.pyzbar as pyzbar
-import numpy as np
 
 
-def decodeDisplay(image):  # 二维码裁剪
-    barcodes = pyzbar.decode(image)  # 解析图片信息
-    # print(barcodes)
-    if barcodes == []:
-        print("未识别到二维码")
-        return None
-    else:
-        # print("识别到二维码")
+def decode_display(image_input):  # 二维码裁剪
+    # 解析图片信息
+    barcodes = pyzbar.decode(image_input)
+
+    if barcodes:
         print(barcodes)
         for barcode in barcodes:
             # 提取二维码的边界框的位置
             # 画出图像中条形码的边界框
             (x, y, w, h) = barcode.rect
-            cv2.rectangle(image, (x, y), (x + w, y + h), (225, 225, 225), 2)
+            cv2.rectangle(image_input, (x, y), (x + w, y + h), (225, 225, 225), 2)
             # 提取二维码数据为字节对象，所以如果我们想在输出图像上
             # 画出来，就需要先将它转换成字符串
-            ROI = image[y:y + h, x:x + h].copy()
+            ROI = image_input[y:y + h, x:x + h].copy()
             barcodeData = barcode.data.decode("utf-8")
             barcodeType = barcode.type
             # 绘出图像上条形码的数据和条形码类型
@@ -29,50 +25,51 @@ def decodeDisplay(image):  # 二维码裁剪
             # print("[INFO] Found {} barcode: {}".format(barcodeType, barcodeData))
         return ROI
 
+    return None
 
-def color_detect(frame):
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # 色彩空间的转化。转化成HSV
-    height, width, _ = frame.shape
+
+def color_detect(frame_input):
+    hsv_frame = cv2.cvtColor(frame_input, cv2.COLOR_BGR2HSV)  # 色彩空间的转化。转化成HSV
+    height, width, _ = frame_input.shape
     cy, cx = height // 2, width // 2
 
     # 获取画面中心点像素值
     pixel_center = hsv_frame[cy, cx]
     hue_value = pixel_center[0]
 
-    color = "Undefined"
+    color_result = "Undefined"
     if 0 < hue_value < 11 or 156 < hue_value < 180:
-        color = "RED"
+        color_result = "RED"
     elif 11 < hue_value < 25:
-        color = "ORANGE"
+        color_result = "ORANGE"
     elif 26 < hue_value < 34:
-        color = "YELLOW"
+        color_result = "YELLOW"
     elif 35 < hue_value < 77:
-        color = "GREEN"
+        color_result = "GREEN"
     elif 78 < hue_value < 99:
-        color = "Qing"
+        color_result = "Qing"
     elif 100 < hue_value < 124:
-        color = "BLUE"
+        color_result = "BLUE"
     elif 125 < hue_value < 155:
-        color = "purple"
-    # elif hue_value<170:
-    #     color="PINK"
+        color_result = "purple"
     else:
         pass
-    # color="RED"
-    return color
+    return color_result
 
 
 if __name__ == "__main__":
     while True:
-        camera = cv2.VideoCapture(0)  # VideoCapture()中参数是0，表示打开笔记本的内置摄像头，参数是视频文件路径则打开
+        # 捕捉画面
+        camera = cv2.VideoCapture(0)
         _, image = camera.read()
-        # image = cv2.imread('b.jpg')
-        frame = decodeDisplay(image)
+
+        frame = decode_display(image)
 
         if frame is not None:
             cv2.imshow('video', frame)
             cv2.waitKey(6000)
             color = color_detect(frame)
             print(color)
+
+        # 释放摄像头
         camera.release()
-        # cv2.destroyAllWindows()
