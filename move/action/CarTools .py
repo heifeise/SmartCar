@@ -16,6 +16,11 @@ class Car_tools:
         self.pwm_ENA = None
         self.pwm_ENB = None
         self.pwm_servo = None
+        # 循迹红外传感器
+        self.TrackSensorLeftPin1 = 3  # 定义左边第一个循迹红外传感器引脚为3口
+        self.TrackSensorLeftPin2 = 5  # 定义左边第二个循迹红外传感器引脚为5口
+        self.TrackSensorRightPin1 = 4  # 定义右边第一个循迹红外传感器引脚为4口
+        self.TrackSensorRightPin2 = 18  # 定义右边第二个循迹红外传感器引脚为18口
         # 小车按键定义
         self.key = 8
         # 超声波引脚定义
@@ -23,6 +28,8 @@ class Car_tools:
         self.TrigPin = 1  # 触发引脚
         # 舵机引脚定义
         self.ServoPin = 23
+        self.camera_lr_pin = 11
+        self.camera_ud_pin = 9
         # 设置GPIO口为BCM编码方式
         GPIO.setmode(GPIO.BCM)
         # 忽略警告信息
@@ -45,6 +52,23 @@ class Car_tools:
         GPIO.setup(self.key, GPIO.IN)
         GPIO.setup(self.EchoPin, GPIO.IN)
         GPIO.setup(self.TrigPin, GPIO.OUT)
+
+        GPIO.setup(self.TrackSensorLeftPin1, GPIO.IN)
+        GPIO.setup(self.TrackSensorLeftPin2, GPIO.IN)
+        GPIO.setup(self.TrackSensorRightPin1, GPIO.IN)
+        GPIO.setup(self.TrackSensorRightPin2, GPIO.IN)
+        
+        
+        GPIO.setup(self.camera_lr_pin, GPIO.OUT)
+        GPIO.setup(self.camera_ud_pin, GPIO.OUT)
+        
+        
+        self.pwm_camera_lr = GPIO.PWM(self.camera_lr_pin, 50)
+        self.pwm_camera_ud = GPIO.PWM(self.camera_ud_pin, 50)
+        
+        self.pwm_camera_lr.start(0)
+        self.pwm_camera_ud.start(0)
+        
         # 设置pwm引脚和频率为2000hz
         self.pwm_ENA = GPIO.PWM(self.ENA, 2000)
         self.pwm_ENB = GPIO.PWM(self.ENB, 2000)
@@ -141,6 +165,14 @@ class Car_tools:
         for i in range(3):
             self.pwm_servo.ChangeDutyCycle(2.5 + 10 * pos / 180)
 
+    def camera_lr_appointed_detection(self, pos):
+        for i in range(1):
+            self.pwm_camera_lr.ChangeDutyCycle(2.5 + 10 * pos / 180)
+    
+    def camera_ud_appointed_detection(self, pos):
+        for i in range(3):
+            self.pwm_camera_ud.ChangeDutyCycle(2.5 + 10 * pos / 180)
+
     # 温度测量（临时）
     def temperature(self, pos):
         return 36.5
@@ -177,12 +209,90 @@ class Car_tools:
         self.pwm_servo.stop()
 
     def stop_pwm(self):
+        self.camera_ud_appointed_detection(50)
+        self.camera_lr_appointed_detection(90)
+        time.sleep(2)
         self.pwm_ENA.stop()
         self.pwm_ENB.stop()
+        self.pwm_camera_lr.stop()
+        self.pwm_camera_ud.stop()
         GPIO.cleanup()
+
+    # 黑线导航
+    def tracking(self):
+        speed = 5
+        while True:
+            time.sleep(2)
+            # 检测到黑线时循迹模块相应的指示灯亮，端口电平为LOW
+            # 未检测到黑线时循迹模块相应的指示灯灭，端口电平为HIGH
+            TrackSensorLeftValue1 = GPIO.input(self.TrackSensorLeftPin1)
+            TrackSensorLeftValue2 = GPIO.input(self.TrackSensorLeftPin2)
+            TrackSensorRightValue1 = GPIO.input(self.TrackSensorRightPin1)
+            TrackSensorRightValue2 = GPIO.input(self.TrackSensorRightPin2)
+            print(TrackSensorLeftValue1, TrackSensorLeftValue2, TrackSensorRightValue1, TrackSensorRightValue1, sep="\t")
+            continue
+            # 四路循迹引脚电平状态
+            # 0 0 X 0
+            # 1 0 X 0
+            # 0 1 X 0
+            # 以上6种电平状态时小车原地右转
+            # 处理右锐角和右直角的转动
+            if (TrackSensorLeftValue1 == False or TrackSensorLeftValue2 == False) and TrackSensorRightValue2 == False:
+                self.spin_right(speed, speed)
+                time.sleep(0.08)
+
+            # 四路循迹引脚电平状态
+            # 0 X 0 0
+            # 0 X 0 1
+            # 0 X 1 0
+            # 处理左锐角和左直角的转动
+            elif TrackSensorLeftValue1 == False and (
+                    TrackSensorRightValue1 == False or TrackSensorRightValue2 == False):
+                self.spin_left(speed, speed)
+                time.sleep(0.08)
+
+            # 0 X X X
+            # 最左边检测到
+            elif TrackSensorLeftValue1 == False:
+                self.spin_left(speed, speed)
+
+            # X X X 0
+            # 最右边检测到
+            elif TrackSensorRightValue2 == False:
+                self.spin_right(speed, speed)
+
+            # 四路循迹引脚电平状态
+            # X 0 1 X
+            # 处理左小弯
+            elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == True:
+                self.left(0, speed)
+
+            # 四路循迹引脚电平状态
+            # X 1 0 X
+            # 处理右小弯
+            elif TrackSensorLeftValue2 == True and TrackSensorRightValue1 == False:
+                self.right(speed, 0)
+
+            # 四路循迹引脚电平状态
+            # X 0 0 X
+            # 处理直线
+            elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == False:
+                self.run(speed, speed)
+
+            # 当为1 1 1 1时小车保持上一个小车运行状态
 
 
 if __name__ == "__main__":
     tool = Car_tools()
-    tool.people_distance()
+    #for i in range(0, 180, 18):
+        #tool.camera_lr_appointed_detection(i)
+    #    tool.camera_ud_appointed_detection(i)
+    #    time.sleep(2)
+        #tool.camera_ud_appointed_detection
+        #tool.run(10,13)
+        #tool.tracking()
+    
+    time.sleep(2)
+    tool.stop_pwm()
+    print("stop")
 
