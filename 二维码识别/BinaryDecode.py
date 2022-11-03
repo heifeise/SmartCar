@@ -16,12 +16,12 @@ def decode_display(image):
 
             # 提取二维码数据为字节对象，所以如果我们想在输出图像上
             # 画出来，就需要先将它转换成字符串
-            barcodeData = barcode.data.decode("utf-8")
-            barcodeType = barcode.type
+            barcode_data = barcode.data.decode("utf-8")
+            barcode_type = barcode.type
 
             # 绘出图像上条形码的数据和条形码类型
             # putText(img, text, org, fontFace, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]]) -> img
-            text = f"{barcodeData} ({barcodeType})"
+            text = f"{barcode_data} ({barcode_type})"
             cv2.putText(image,
                         text,
                         (x, y - 10),

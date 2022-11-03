@@ -67,7 +67,7 @@ def cnt_area(cnt):
     return area
 
 
-def If_Have_Mask(img):
+def if_have_mask(img):
     """
     通过肤色轮廓面积与ROI面积比值判断是否佩戴口罩
     :return: 是否佩戴口罩结果
@@ -184,6 +184,6 @@ if __name__ == '__main__':
     """
 
     if ret == 1:
-        print(If_Have_Mask(frame))
+        print(if_have_mask(frame))
     else:
         print("未识别到人脸")
