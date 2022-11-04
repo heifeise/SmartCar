@@ -1,7 +1,7 @@
 import queue
 
 from action.CarTools import CarTools
-from communication.Server import Server
+from Server.Server import Server
 import threading
 import time
 """
@@ -17,7 +17,7 @@ open-image-identy:开启图像识别
 """
 
 list_opencv = ['open-image-identy']
-list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature']
+list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature', 'quit']
 
 
 # 巡线
@@ -48,7 +48,7 @@ def car_action(tool, lock_track, lock_distance, que_action):
             lock_track.acquire()  # 上锁,阻塞巡线线程
         elif command[0] == list_action[6]:  # 开启距离测量模块
             lock_distance.release()
-        elif command == "quit":
+        elif command[0] == list_action[7]:
             tool.close()  # 退出通信控制移动
             serv.close()  # 退出通信
             break

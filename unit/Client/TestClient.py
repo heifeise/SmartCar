@@ -1,4 +1,4 @@
-from communication.Client import Client
+from Client.Client import Client
 
 if __name__ == '__main__':
     ip = '192.168.31.79'  # ### ip地址，记得改 ###

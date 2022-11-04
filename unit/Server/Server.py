@@ -2,7 +2,7 @@ import re
 from socket import *
 import queue
 import threading
-from Clock import Clock
+from Client.Clock import Clock
 
 """
 命令：解析

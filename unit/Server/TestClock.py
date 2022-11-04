@@ -1,4 +1,4 @@
-from Clock import Clock
+from Client.Clock import Clock
 tim = Clock()
 tim.start(1)
 i = 0

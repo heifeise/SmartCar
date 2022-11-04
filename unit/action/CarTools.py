@@ -76,7 +76,7 @@ class CarTools:
         self.pwm_ENB.start(0)
 
     # 小车前进
-    def run(self, leftspeed, rightspeed):
+    def run(self, leftspeed=5, rightspeed=5):
         GPIO.output(self.IN2, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.LOW)
         GPIO.output(self.IN1, GPIO.HIGH)
@@ -85,7 +85,7 @@ class CarTools:
         self.pwm_ENB.ChangeDutyCycle(rightspeed)
 
     # 小车后退
-    def back(self, leftspeed, rightspeed):
+    def back(self, leftspeed=5, rightspeed=5):
         GPIO.output(self.IN1, GPIO.LOW)
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN2, GPIO.HIGH)
@@ -94,7 +94,7 @@ class CarTools:
         self.pwm_ENB.ChangeDutyCycle(rightspeed)
 
     # 小车左转
-    def left(self, leftspeed, rightspeed):
+    def left(self, leftspeed=5, rightspeed=8):
         GPIO.output(self.IN1, GPIO.LOW)
         GPIO.output(self.IN2, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.LOW)
@@ -103,7 +103,7 @@ class CarTools:
         self.pwm_ENB.ChangeDutyCycle(rightspeed)
 
     # 小车右转
-    def right(self, leftspeed, rightspeed):
+    def right(self, leftspeed=8, rightspeed=5):
         GPIO.output(self.IN2, GPIO.LOW)
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.LOW)
@@ -112,7 +112,7 @@ class CarTools:
         self.pwm_ENB.ChangeDutyCycle(rightspeed)
 
     # 小车原地左转
-    def spin_left(self, leftspeed, rightspeed):
+    def spin_left(self, leftspeed=5, rightspeed=5):
         GPIO.output(self.IN2, GPIO.HIGH)
         GPIO.output(self.IN1, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.LOW)
@@ -121,7 +121,7 @@ class CarTools:
         self.pwm_ENB.ChangeDutyCycle(rightspeed)
 
     # 小车原地右转
-    def spin_right(self, leftspeed, rightspeed):
+    def spin_right(self, leftspeed=5, rightspeed=5):
         GPIO.output(self.IN1, GPIO.HIGH)
         GPIO.output(self.IN2, GPIO.LOW)
         GPIO.output(self.IN3, GPIO.LOW)
