@@ -1,9 +1,9 @@
-import Server
+from Server import Server
 if __name__ == "__main__":
     ip = '192.168.31.79'
     port = 6666
     time_out = 3
-    serv = server.Server(ip, port, time_out)
+    serv = Server(ip, port, time_out)
     serv.get_client()  # 获取套接字
     print("获取成功")
     serv.get_from_client()  # 在子线程中获取消息

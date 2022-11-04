@@ -4,7 +4,16 @@ import queue
 import threading
 from Clock import Clock
 
-
+"""
+命令：解析
+turn-left-speedleft-speedright:左转_左轮速度_右轮速度
+turn-right-speedleft-speedright:右转_左轮速度_右轮速度
+straight-speed:直行_速度
+trackline:巡线模式
+manual:手动控制
+open-distance-mature:开启测距模块
+open-image-identy:开启图像识别
+"""
 # 枚举报文类型
 class MessType:
     REACTION = "reaction"
@@ -20,7 +29,9 @@ class Server:
         # 本地信息
         self.server_ip = server_ip  # 服务端ip地址
         self.server_port = server_port  # 服务端的端口号
-        self.command_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + MessType.COMMAND + "_" + MessType.END  # 接收的命令格式
+        # 报文头_tag_命令_参数1_参数2_类别标识_报文结尾
+        self.command_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + "(-[0-9]+)?" + "(-[0-9]+)?"
+        self.command_patten += MessType.COMMAND + "_" + MessType.END  # 接收的命令格式
         self.reaction_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + MessType.REACTION + "_" + MessType.END  # 返回给客户机的反馈信息
         self.connect_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + MessType.STATUS + "_" + MessType.END  # 确认连接状态的信息
         # 创建socket

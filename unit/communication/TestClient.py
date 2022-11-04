@@ -1,12 +1,14 @@
-import Client
+from communication.Client import Client
 
 if __name__ == '__main__':
     ip = '192.168.31.79'  # ### ip地址，记得改 ###
     port = 6666
-    clien = client.Client(ip, port)
+    clien = Client(ip, port)
     clien.get_connect()  # 与服务端连接
     clien.check_connect()
     flag = True
+    list_command = ['turn-left', 'turn-right', 'straight', 'trackline', 'manual', 'open-distance-manual',
+                    'open-image-identy']
     while flag:
         command = input("请输入一条命令:\n")
         tag = input("请输入命令标识：\n")
