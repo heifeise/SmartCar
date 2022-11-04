@@ -1,6 +1,3 @@
-"""
-计时器测功能试
-"""
 from clock import Clock
 tim = Clock()
 tim.start(1)

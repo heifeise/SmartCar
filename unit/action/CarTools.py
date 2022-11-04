@@ -1,7 +1,8 @@
 # -*- coding:UTF-8 -*-
-import RPi.GPIO as GPIO
 import time
-import numpy as np
+
+import RPi.GPIO as GPIO
+
 
 class CarTools:
     def __init__(self):
@@ -48,7 +49,7 @@ class CarTools:
         GPIO.setup(self.ENB, GPIO.OUT, initial=GPIO.HIGH)
         GPIO.setup(self.IN3, GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.IN4, GPIO.OUT, initial=GPIO.LOW)
-        
+
         GPIO.setup(self.key, GPIO.IN)
         GPIO.setup(self.EchoPin, GPIO.IN)
         GPIO.setup(self.TrigPin, GPIO.OUT)
@@ -57,22 +58,20 @@ class CarTools:
         GPIO.setup(self.TrackSensorLeftPin2, GPIO.IN)
         GPIO.setup(self.TrackSensorRightPin1, GPIO.IN)
         GPIO.setup(self.TrackSensorRightPin2, GPIO.IN)
-        
-        
+
         GPIO.setup(self.camera_lr_pin, GPIO.OUT)
         GPIO.setup(self.camera_ud_pin, GPIO.OUT)
-        
-        
+
         self.pwm_camera_lr = GPIO.PWM(self.camera_lr_pin, 50)
         self.pwm_camera_ud = GPIO.PWM(self.camera_ud_pin, 50)
-        
+
         self.pwm_camera_lr.start(0)
         self.pwm_camera_ud.start(0)
-        
+
         # 设置pwm引脚和频率为2000hz
         self.pwm_ENA = GPIO.PWM(self.ENA, 2000)
         self.pwm_ENB = GPIO.PWM(self.ENB, 2000)
-        
+
         self.pwm_ENA.start(0)
         self.pwm_ENB.start(0)
 
@@ -159,7 +158,7 @@ class CarTools:
         # print("distance is %d " % (((t2 - t1) * 340 / 2) * 100))
         time.sleep(0.01)
         return ((t2 - t1) * 340 / 2) * 100
-    
+
     # 舵机旋转到指定角度
     def servo_appointed_detection(self, pos):
         for i in range(3):
@@ -168,7 +167,7 @@ class CarTools:
     def camera_lr_appointed_detection(self, pos):
         for i in range(1):
             self.pwm_camera_lr.ChangeDutyCycle(2.5 + 10 * pos / 180)
-    
+
     def camera_ud_appointed_detection(self, pos):
         for i in range(3):
             self.pwm_camera_ud.ChangeDutyCycle(2.5 + 10 * pos / 180)
@@ -176,7 +175,7 @@ class CarTools:
     # 温度测量（临时）
     def temperature(self, pos):
         return 36.5
-    
+
     # 人类判断
     def isHuman(self, pos):
         if self.temperature(pos) >= 35.5:
@@ -188,7 +187,7 @@ class CarTools:
         GPIO.setup(self.ServoPin, GPIO.OUT)
         self.pwm_servo = GPIO.PWM(self.ServoPin, 50)
         self.pwm_servo.start(0)
-        self.servo_appointed_detection(pos) # the position of first people
+        self.servo_appointed_detection(pos)  # the position of first people
         first_distance = self.distance_mature()
         second_distance = first_distance
         for i in range(0, 60, 3):
@@ -198,7 +197,7 @@ class CarTools:
                 print(temp)
                 if temp < second_distance:
                     second_distance = temp
-                print("distance between two things:",(temp ** 2 - first_distance ** 2) ** (1 / 2))
+                print("distance between two things:", (temp ** 2 - first_distance ** 2) ** (1 / 2))
             time.sleep(0.3)
         distance = (1 + first_distance ** 2) ** (1 / 2)
         print("first_people:", first_distance)
@@ -229,7 +228,8 @@ class CarTools:
             TrackSensorLeftValue2 = GPIO.input(self.TrackSensorLeftPin2)
             TrackSensorRightValue1 = GPIO.input(self.TrackSensorRightPin1)
             TrackSensorRightValue2 = GPIO.input(self.TrackSensorRightPin2)
-            print(TrackSensorLeftValue1, TrackSensorLeftValue2, TrackSensorRightValue1, TrackSensorRightValue1, sep="\t")
+            print(TrackSensorLeftValue1, TrackSensorLeftValue2, TrackSensorRightValue1, TrackSensorRightValue1,
+                  sep="\t")
             continue
             # 四路循迹引脚电平状态
             # 0 0 X 0
@@ -284,14 +284,14 @@ class CarTools:
 
 if __name__ == "__main__":
     tool = Car_tools()
-    #for i in range(0, 180, 18):
-        #tool.camera_lr_appointed_detection(i)
+    # for i in range(0, 180, 18):
+    # tool.camera_lr_appointed_detection(i)
     #    tool.camera_ud_appointed_detection(i)
     #    time.sleep(2)
-        #tool.camera_ud_appointed_detection
-        #tool.run(10,13)
-        #tool.tracking()
-    
+    # tool.camera_ud_appointed_detection
+    # tool.run(10,13)
+    # tool.tracking()
+
     time.sleep(2)
     tool.stop_pwm()
     print("stop")
