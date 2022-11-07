@@ -2,7 +2,7 @@ import re
 from socket import *
 import queue
 import threading
-from Client.Clock import Clock
+from Clock import Clock
 
 """
 命令：解析
@@ -30,7 +30,7 @@ class Server:
         self.server_ip = server_ip  # 服务端ip地址
         self.server_port = server_port  # 服务端的端口号
         # 报文头_tag_命令_参数1_参数2_类别标识_报文结尾
-        self.command_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + "(-[0-9]+)?" + "(-[0-9]+)?"
+        self.command_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+" + "(-[0-9]+)?" + "(-[0-9]+)?_"
         self.command_patten += MessType.COMMAND + "_" + MessType.END  # 接收的命令格式
         self.reaction_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + MessType.REACTION + "_" + MessType.END  # 返回给客户机的反馈信息
         self.connect_patten = MessType.BEGIN + "_[a-zA-Z0-9]+_[a-zA-Z0-9]+_" + MessType.STATUS + "_" + MessType.END  # 确认连接状态的信息
@@ -104,6 +104,7 @@ class Server:
     # 字符串校验
     @staticmethod
     def check_command(patten, mess):
+        # print(mess, patten, sep='\t')
         return re.fullmatch(patten, mess) is not None
 
     def close(self):
