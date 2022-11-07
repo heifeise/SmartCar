@@ -16,8 +16,8 @@ open-distance-mature:开启测距模块
 open-image-identy:开启图像识别
 """
 
-list_opencv = ['open-image-identy']
-list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature', 'quit']
+list_opencv = ['open-image-identy']  # opencv相关命令
+list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature', 'close-distance-mature', 'quit']  # 行动代码
 
 
 # 巡线
@@ -48,7 +48,9 @@ def car_action(tool, lock_track, lock_distance, que_action):
             lock_track.acquire()  # 上锁,阻塞巡线线程
         elif command[0] == list_action[6]:  # 开启距离测量模块
             lock_distance.release()
-        elif command[0] == list_action[7]:
+        elif command[0] == list_action[7]: # 关闭距离测量模块
+            lock_distance.acquire()
+        elif command[0] == list_action[8]:
             tool.close()  # 退出通信控制移动
             serv.close()  # 退出通信
             break
@@ -57,16 +59,14 @@ def car_action(tool, lock_track, lock_distance, que_action):
 # 测量两人之间的距离
 def test_distance(tool, lock_distance):
     while True:
-        lock_distance.acquired()
-        if not tool.is_human(0):  # 如果此时垂直距离处的物体是人类
-            lock_distance.release()
-            yield "not human"
-        message = tool.people_distance(pos=0, spacing=1)
+        if not tool.is_human(0):  # 如果此时垂直距离处的物体不是人类
+            continue
+        message = tool.people_distance(pos=0, spacing=1)  # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
         if message[1] <= message[2]:  # 如果与第二人的距离小于理想距离
-            yield False
-        yield True
-        lock_distance.release()
+            Buzzer()  # 发出提示音
 
+def Buzzer():
+    print("to close")
 
 def get_command(server, que_action, que_opencv):
     while True:
@@ -90,9 +90,9 @@ if __name__ == "__main__":
     tools = CarTools()
 
     track_line = 0
-    locktrack = threading.Lock()  # 创建巡线同步锁，用以巡线与手动操纵之间的切换
-    locktrack.acquire()  # 上锁
-    th_track = threading.Thread(target=trackline, args=(tools, locktrack), daemon=True)  # 创建巡线线程
+    lock_track = threading.Lock()  # 创建巡线同步锁，用以巡线与手动操纵之间的切换
+    lock_track.acquire()  # 上锁
+    th_track = threading.Thread(target=trackline, args=(tools, lock_track), daemon=True)  # 创建巡线线程
     th_track.start()
 
     action_que = queue.Queue()  # 小车移动控制消息队列
@@ -100,20 +100,18 @@ if __name__ == "__main__":
     th_command = threading.Thread(target=get_command, args=(serv, action_que, opencv_que), daemon=True)  # 创建命令接收，分类线程
     th_command.start()
 
-    th_action = threading.Thread(target=car_action, args=(tools, locktrack, action_que), daemon=True)  # 创建小车移动控制线程
+    th_action = threading.Thread(target=car_action, args=(tools, lock_track, action_que), daemon=True)  # 创建小车移动控制线程
     th_action.start()
 
-    testdistance = 0
-    lockdistance = threading.Lock()  # 创建距离检测功能同步锁
-    lockdistance.acquire()
+    distance = 0
+    lock_distance = threading.Lock() # 创建距离测量线程同步锁, 用以开关测距功能
+    lock_distance.acquire()  # 上锁
     th_distance = threading.Thread(target=test_distance, args=(tools, lockdistance), daemon=True)
     th_distance.start()
-
+    # lock_track.release()  # 开启巡线
     # 程序循环
     while True:
         commands = ""
         if not opencv_que.empty():
             commands = opencv_que.get()
         print(commands)  # 此处放置图像处理代码
-        # 图像识别代码
-        pass
