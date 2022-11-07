@@ -2,8 +2,8 @@ import sys
 import numpy as np
 import cv2
 
-modelFile = "opencv_face_detector_uint8.pb"  # 模型文件
-configFile = "opencv_face_detector.pbtxt"  # 配置文件
+modelFile = "visual_part\mask\opencv_face_detector_uint8.pb"  # 模型文件
+configFile = "visual_part\mask\opencv_face_detector.pbtxt"  # 配置文件
 net = cv2.dnn.readNetFromTensorflow(modelFile, configFile)  # 加载人脸识别模型
 conf_threshold = 0.7
 
