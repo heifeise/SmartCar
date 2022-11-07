@@ -1,7 +1,4 @@
-"""
-计时器测功能试
-"""
-from clock import Clock
+from Client.Clock import Clock
 tim = Clock()
 tim.start(1)
 i = 0
