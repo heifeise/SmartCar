@@ -22,7 +22,7 @@ def detect_color():
             if detector.frame() is not None:
                 cv2.imshow('video', image)
 
-                cv2.waitKey(3000)
+                cv2.waitKey(2000)
 
                 print(detector.get_result())
                 temp = input("输入任意内容以继续（q退出当前功能模块）-->>")  # 测试用
@@ -44,6 +44,11 @@ def detect_mask():
         print(if_have_mask(frame))
     else:
         print("未识别到人脸")
+    
+    temp = input("输入任意内容以继续（q退出当前功能模块）-->>")  # 测试用
+    camera.release()
+    cv2.destroyAllWindows()
+
 
 
 def get_input_choice_index(choices: list):
