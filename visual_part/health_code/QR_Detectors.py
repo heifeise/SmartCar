@@ -1,6 +1,7 @@
 import cv2
 from pyzbar.pyzbar import decode
-import details.ColorDetect as detail_c_d
+from .details import ColorDetect as detail_c_d
+
 
 
 class ColorDetector:
@@ -25,6 +26,9 @@ class ColorDetector:
             self.__init_color_result()
 
         return self.__color_result
+
+    def frame(self):
+        return self.__QR_code_frame
 
 
 # unit-test 用
