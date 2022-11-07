@@ -17,7 +17,8 @@ class MessType:
 开始符_信息标识_信息_信息类别_结束符
 """
 
-
+# list_opencv = ['open-image-identy']  # opencv相关命令
+# list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature', 'close-distance-mature', 'quit']  # 行动代码
 class Client:
     def __init__(self, server_ip: str, server_port: int, time_out: 'int > 0' = 5):
         # 创建socket
@@ -94,6 +95,6 @@ class Client:
         th.start()
 
     # 关闭嵌套字
-    def close(self):
+    def _close(self):
         self.tcp_client_socket.close()
         self.close = True
