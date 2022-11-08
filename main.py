@@ -44,11 +44,10 @@ def detect_mask():
         print(if_have_mask(frame))
     else:
         print("未识别到人脸")
-    
+
     temp = input("输入任意内容以继续（q退出当前功能模块）-->>")  # 测试用
     camera.release()
     cv2.destroyAllWindows()
-
 
 
 def get_input_choice_index(choices: list):
@@ -66,45 +65,51 @@ def get_input_choice_index(choices: list):
 
 
 def visual_part():
-    while True:
-        system("cls")
-        print("----------------------------")
-        print("-------视觉处理部分菜单-------")
-        print("----------------------------")
-        print("\t[1] 口罩识别")
-        print("\t[2] 健康码颜色识别")
-        print("\t[3] 返回")
+    options = ['口罩识别', '健康码颜色识别', '返回',
+               "mask detect", "barcode color detect", "back",
+               '1', '2', '3']
+    func = [detect_mask, detect_color, exit]
 
-        options = ['口罩识别', '健康码颜色识别', '返回',
-                   "mask detect", "barcode color detect", "back",
-                   '1', '2', '3']
-        func = [detect_mask, detect_color, exit]
-        option_chosen_index = get_input_choice_index(options)
-        if option_chosen_index == 2:
-            break
-        func[option_chosen_index]()
+    menu(options, func, True)
 
 
 def control_part():
+    options = ["移动", '摄像头', '超声波', '返回',
+               '', '', '', 'back',
+               '1', '2', '3', '4']
     pass
 
 
 def init_main_menu():
+    options = ['视觉处理部分', '通信与小车控制部分', '退出程序',
+               "visual part", "control part", "exit",
+               '1', '2', '3']
+    func = [visual_part, control_part, exit]
+
+    menu(options, func, False)
+
+
+def menu(options: list, func: list, is_submenu: bool):
+    """
+    options: 列表，包含汉语选项、英文选项、序号选项（顺序对应）
+    func: 列表，对应于每个选项执行的函数，是函数的列表
+    is_submenu：bool型，是否子列表，即 可返回上一级菜单
+    """
+    n_options = int(len(options)/3)
     while True:
         system("cls")
         print("----------------------------")
         print("------------菜单------------")
         print("----------------------------")
-        print("----------------------------")
-        print("\t[1] 视觉处理部分")
-        print("\t[2] 通信与小车控制部分")
-        print("\t[3] 退出程序")
 
-        options = ['视觉处理部分', '通信与小车控制部分', '退出程序',
-                   "visual part", "communication and control part", "exit",
-                   '1', '2', '3']
-        func = [visual_part, control_part, exit]
+        for i in range(n_options):
+            print(f"\t[{i+1}] {options[i]}（{options[i+n_options]}）")
+
         option_chosen_index = get_input_choice_index(options)
+
+        back_index = n_options-1
+        if is_submenu and option_chosen_index == back_index:
+            break
         func[option_chosen_index]()
 
 
