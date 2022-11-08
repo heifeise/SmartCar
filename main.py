@@ -73,11 +73,25 @@ def visual_part():
     menu(options, func, True)
 
 
+def move():
+    pass
+
+
+def camera_control():
+    pass
+
+
+def ultrasonic():
+    pass
+
+
 def control_part():
     options = ["移动", '摄像头', '超声波', '返回',
-               '', '', '', 'back',
+               'body', 'camera', 'distance', 'back',
                '1', '2', '3', '4']
-    pass
+    func = [move, camera_control, ultrasonic, exit]
+
+    menu(options, func, is_submenu=True)
 
 
 def init_main_menu():
