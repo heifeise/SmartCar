@@ -5,6 +5,7 @@ from Server import Server
 import threading
 import time
 
+
 """
 命令：解析
 turn-left-speedleft-speedright:左转_左轮速度_右轮速度
@@ -138,14 +139,23 @@ if __name__ == "__main__":
 
     # lock_track.release()  # 开启巡线
     # 程序循环
-
+    #
     while True:
         commands = ""
         if not opencv_que.empty():
             commands = opencv_que.get()
             print(commands)  # 此处放置图像处理代码
-        time.sleep(3)  # 模拟图像处理所耗费的时间
-        # print("开始测距")
-        # test_distance(tools)
-        # print("结束测距")
-        # 尝试放到线程中执行
+        # time.sleep(3)  # 模拟图像处理所耗费的时间
+        lock_distance.acquire()
+        camera = cv2.VideoCapture(0)
+
+        is_got_image, image = camera.read()
+        if is_got_image:
+            detector = ColorDetector(image_input=image)
+
+            if detector.frame() is not None:
+                result = detector.get_result()
+                print(result)
+
+        camera.release()
+        lock_distance.acquire()
