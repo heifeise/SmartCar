@@ -184,7 +184,7 @@ class CarTools:
 
     # 人与人之间的距离
     # pos:参照的第一人的位置（角度）
-    def people_distance(self, pos=0, spacing=1):
+    def people_distance(self, lock_distance, pos=0, spacing=1):
         GPIO.setup(self.ServoPin, GPIO.OUT)
         pwm_servo = GPIO.PWM(self.ServoPin, 50)
         pwm_servo.start(0)
@@ -193,19 +193,14 @@ class CarTools:
         second_distance = first_distance
         for i in range(0, 50, 5):
             if self.is_human(i):  # 判断位置i的物体是否是人类
-                self.servo_appointed_detection(i, pwm_servo)
-                #self.servo_appointed_detection(i)  # 转动舵机
-                temp = self.distance_mature()
-                # print(temp)
-                if temp < second_distance:
+                lock_distance.acquire()  # 防止其他线程抢占处理机
+                self.servo_appointed_detection(i, pwm_servo)  # 转动舵机
+                lock_distance.release()  # 防止其他线程抢占处理机
+                temp = self.distance_mature()  # 测量当前方向上人类的距离
+                if temp < second_distance:  # 选择记录最小的
                     second_distance = temp
-                # print("distance between two things:", (temp ** 2 - first_distance ** 2) ** (1 / 2))
             time.sleep(0.3)
         distance = (spacing + first_distance ** 2) ** (1 / 2)
-        # print("first_people:", first_distance)
-        # print("second_people:", second_distance)
-        # print("should be:", distance)
-        #self.servo_appointed_detection(0)
         self.servo_appointed_detection(0, pwm_servo)
         time.sleep(0.3)
         pwm_servo.stop()
@@ -292,5 +287,4 @@ if __name__ == "__main__":
     # tool.tracking()
     t1 = time.time()
     tool.people_distance(pos=0, spacing=1)
-    print(time.time()-t1)
-    
+    print(time.time() - t1)
