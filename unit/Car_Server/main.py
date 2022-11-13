@@ -5,6 +5,10 @@ from Server import Server
 import threading
 import time
 
+import cv2
+from visual_part.health_code.QR_Detectors import ColorDetector
+from visual_part.mask.MaskDetect import detectFaceOpenCVDnn, if_have_mask, net
+
 """
 命令：解析
 turn-left-speedleft-speedright:左转_左轮速度_右轮速度
@@ -67,7 +71,8 @@ def car_action(tool, lock_dist, lock_track, que_action):
 def test_distance(tool, lock_dist):
     if not tool.is_human(0):  # 如果此时垂直距离处的物体不是人类
         print("not human")
-    message = tool.people_distance(lock_dist, pos=0, spacing=1)  # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
+    # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
+    message = tool.people_distance(lock_dist, pos=0, spacing=1)
     if message[1] <= message[2]:  # 如果与第二人的距离小于理想距离
         Buzzer()  # 发出提示音
     else:
@@ -116,20 +121,24 @@ if __name__ == "__main__":
 
     distance_lock = 0
     lock_distance = threading.Lock()  # 创建距离测量线程锁
-    th_distance = threading.Thread(target=test_distance, args=(tools, lock_distance), daemon=True)
+    th_distance = threading.Thread(
+        target=test_distance, args=(tools, lock_distance), daemon=True)
 
     track_line = 0
     lock_track = threading.Lock()  # 创建巡线同步锁，用以巡线与手动操纵之间的切换
     lock_track.acquire()  # 上锁
-    th_track = threading.Thread(target=trackline, args=(tools, lock_track, lock_distance), daemon=True)  # 创建巡线线程
+    th_track = threading.Thread(target=trackline, args=(
+        tools, lock_track, lock_distance), daemon=True)  # 创建巡线线程
 
     action_que = queue.Queue()  # 小车移动控制消息队列
     opencv_que = queue.Queue()  # 图像处理命令队列
     # 创建命令接收、分类线程
-    th_command = threading.Thread(target=get_command, args=(serv, lock_distance, action_que, opencv_que), daemon=True)
+    th_command = threading.Thread(target=get_command, args=(
+        serv, lock_distance, action_que, opencv_que), daemon=True)
 
     # 创建小车移动控制线程
-    th_action = threading.Thread(target=car_action, args=(tools, lock_distance, lock_track, action_que), daemon=True)
+    th_action = threading.Thread(target=car_action, args=(
+        tools, lock_distance, lock_track, action_que), daemon=True)
 
     th_command.start()
     th_distance.start()
@@ -144,6 +153,27 @@ if __name__ == "__main__":
         if not opencv_que.empty():
             commands = opencv_que.get()
             print(commands)  # 此处放置图像处理代码
+
+        while True:
+            camera = cv2.VideoCapture(0)  # 开摄像头
+            is_got_image, image = camera.read()  # 读图
+            if is_got_image:  # 读到正确图
+                # [1] 健康码颜色检测
+                detector = ColorDetector(image_input=image)  # 调用颜色检测实现细节类
+
+                if detector.frame() is not None:
+                    color_result = detector.get_result()  # 结果
+
+                    print(color_result)
+
+                # [2] 口罩识别
+                ret, frame = detectFaceOpenCVDnn(net, image)
+
+                result_mask_detect = if_have_mask(
+                    frame) if ret == 1 else "未识别到人脸"
+
+            camera.release()
+
         time.sleep(3)  # 模拟图像处理所耗费的时间
         # print("开始测距")
         # test_distance(tools)
