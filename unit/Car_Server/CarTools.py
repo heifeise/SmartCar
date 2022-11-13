@@ -203,7 +203,7 @@ class CarTools:
                 temp = self.distance_mature()  # 测量当前方向上人类的距离
                 if temp < second_distance:  # 选择记录最小的
                     second_distance = temp
-        distance = (spacing + first_distance ** 2) ** (1 / 2)  # 小车与第二人的应有距离
+        distance = (spacing ** 2 + first_distance ** 2) ** (1 / 2)  # 小车与第二人的应有距离
         # self.servo_appointed_detection(0, pwm_servo)
         # time.sleep(0.3)
         pwm_servo.stop()

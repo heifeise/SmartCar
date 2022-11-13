@@ -68,7 +68,7 @@ def car_action(tool, lock_dist, lock_track, que_action):
 def test_distance(tool, lock_dist):
     if not tool.is_human(0):  # 如果此时垂直距离处的物体不是人类
         print("not human")
-    message = tool.people_distance(lock_dist, pos=0, spacing=1)  # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
+    message = tool.people_distance(lock_dist, pos=0, spacing=100)  # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
     if message[1] < message[2]:  # 如果与第二人的距离小于理想距离
         Buzzer()  # 发出提示音
     else:
