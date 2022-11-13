@@ -184,7 +184,7 @@ class CarTools:
 
     # 人与人之间的距离
     # pos:参照的第一人的位置（角度）
-    def people_distance(self, lock_distance, pos=0, spacing=1):
+    def people_distance(self, lock_distance, pos=0, spacing=100):
         GPIO.setup(self.ServoPin, GPIO.OUT)
         pwm_servo = GPIO.PWM(self.ServoPin, 50)
         pwm_servo.start(0)
