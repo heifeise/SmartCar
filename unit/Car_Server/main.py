@@ -157,20 +157,21 @@ if __name__ == "__main__":
         while True:
             camera = cv2.VideoCapture(0)  # 开摄像头
             is_got_image, image = camera.read()  # 读图
+
             if is_got_image:  # 读到正确图
-                # [1] 健康码颜色检测
-                detector = ColorDetector(image_input=image)  # 调用颜色检测实现细节类
+                is_have_face, frame = detectFaceOpenCVDnn(net, image)
 
-                if detector.frame() is not None:
-                    color_result = detector.get_result()  # 结果
+                # [1] OpenCVDnn模型判断image是否包含人脸，是则进入口罩识别
+                if is_have_face == 1:
+                    result = if_have_mask(frame)
+                # [2] 健康码颜色检测
+                else:
+                    detector = ColorDetector(image_input=image)  # 调用颜色检测实现细节类
 
-                    print(color_result)
+                    if detector.frame() is not None:
+                        result = detector.get_result()  # 结果
 
-                # [2] 口罩识别
-                ret, frame = detectFaceOpenCVDnn(net, image)
-
-                result_mask_detect = if_have_mask(
-                    frame) if ret == 1 else "未识别到人脸"
+            print(result)  # 测试用
 
             camera.release()
 
