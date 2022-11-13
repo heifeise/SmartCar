@@ -188,21 +188,24 @@ class CarTools:
         GPIO.setup(self.ServoPin, GPIO.OUT)
         pwm_servo = GPIO.PWM(self.ServoPin, 50)
         pwm_servo.start(0)
+        lock_distance.acquire()  # 上锁，防止其他线程抢占处理机
         self.servo_appointed_detection(pos, pwm_servo)  # the position of first people
+        time.sleep(0.3)
+        lock_distance.release()  # 解锁
         first_distance = self.distance_mature()
         second_distance = first_distance
-        for i in range(0, 50, 5):
+        for i in range(5, 50, 5):
             if self.is_human(i):  # 判断位置i的物体是否是人类
-                lock_distance.acquire()  # 防止其他线程抢占处理机
+                lock_distance.acquire()  # 上锁，防止其他线程抢占处理机
                 self.servo_appointed_detection(i, pwm_servo)  # 转动舵机
-                lock_distance.release()  # 防止其他线程抢占处理机
+                time.sleep(0.3)
+                lock_distance.release()  # 解锁
                 temp = self.distance_mature()  # 测量当前方向上人类的距离
                 if temp < second_distance:  # 选择记录最小的
                     second_distance = temp
-            time.sleep(0.3)
-        distance = (spacing + first_distance ** 2) ** (1 / 2)
-        self.servo_appointed_detection(0, pwm_servo)
-        time.sleep(0.3)
+        distance = (spacing + first_distance ** 2) ** (1 / 2)  # 小车与第二人的应有距离
+        # self.servo_appointed_detection(0, pwm_servo)
+        # time.sleep(0.3)
         pwm_servo.stop()
         return first_distance, second_distance, distance
 
