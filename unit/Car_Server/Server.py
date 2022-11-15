@@ -9,9 +9,10 @@ from Clock import Clock
 turn-left-speedleft-speedright:左转_左轮速度_右轮速度
 turn-right-speedleft-speedright:右转_左轮速度_右轮速度
 straight-speed:直行_速度
+stop:停止
 trackline:巡线模式
 manual:手动控制
-open-distance-mature:开启测距模块
+openDistanceMature:开启测距模块
 open-image-identy:开启图像识别
 """
 # 枚举报文类型
