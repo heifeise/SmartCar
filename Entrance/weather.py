@@ -8,16 +8,16 @@ def report_weather():
 
     response = requests.get(myurl)
 
-    print(response)
+    # print(response)
     json = response.json()
-    print(json)
+    # print(json)
     data = json.get("data")
-    print(data)
+    # print(data)
     temperature = data.get("wendu")
-    print(temperature)
+    # print(temperature)
     pm25 = data.get("pm25")
     print("temperature:{},pm25:{}".format(temperature,pm25))
-
+    espeak_chinese("当前的温度是{}，度,当前的pm25污染指数是{}".format(temperature, pm25))
 
 
 report_weather()
