@@ -1,9 +1,16 @@
 import os
 
-
 def espaek_english(words):
-    os.system('espeak ' + words)
+    '''
+    :param words:需要输入的话
+    :return: void
+    '''
+    os.system('espeak '+words)
 
 
 def espeak_chinese(words):
-    os.system('espeak -vzh+f2 ' + words)
+    '''
+    :param words:需要输入的话
+    :return: void
+    '''
+    os.system('espeak -vzh+f2 '+words)
