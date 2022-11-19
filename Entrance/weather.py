@@ -6,6 +6,17 @@ def report_weather():
     myurl = "http://t.weather.sojson.com/api/weather/city/101120101" #济南市天气接口
 
 
+    response = requests.get(myurl)
+
+    print(response)
+    json = response.json()
+    print(json)
+    data = json.get("data")
+    print(data)
+    temperature = data.get("wendu")
+    print(temperature)
+    pm25 = data.get("pm25")
+    print("temperature:{},pm25:{}".format(temperature,pm25))
 
 
 
