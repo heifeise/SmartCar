@@ -1,41 +1,48 @@
-# 基于百度ai人流量检测
-import requests
-import base64
 import cv2
-'''
-人流量统计（动态版）
-'''
-# 基于百度ai人流量检测
-def gettoken():
-    token = ""
-    if token == "":
-        APP_ID = '28622754'
-        API_KEY = 'QATtfAeE9jZE56MsGzGlMIVl'
-        SECRET_KEY = 'S47jZegomzE3GCaya5MsrLfdjc0Chmjk'
+import time
 
-        # client_id 为官网获取的AK， client_secret 为官网获取的SK
-        host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials' + \
-               '&client_id=' + API_KEY + \
-               '&client_secret=' + SECRET_KEY
-        # print(host)
-        response = requests.get(host)
-        # if response:
-        #     for item in response.json().items():  # 逐项遍历response.json()----字典
-        #         print(item)
-        token = response.json()["access_token"]
-        print(">>成功获取到token")
-        return token
 
-request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/body_tracking"
-camera = cv2.VideoCapture(0)  # 读取相机组件
-ret, frame = camera.read()  # 从摄像头读取图像 存放在frame
-# frame = open('[本地文件]', 'rb')
-img = base64.b64encode(frame)
+def getTrainingData(window_name, camera_id, path_name, max_num):
+    cv2.namedWindow(window_name)
+    cap = cv2.VideoCapture(camera_id)
+    classifier = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
-params = {"area":"1,1,719,1,719,719,1,719","case_id":1,"case_init":"false","dynamic":"true","image":img}
-access_token = gettoken()
-request_url = request_url + "?access_token=" + access_token
-headers = {'content-type': 'application/x-www-form-urlencoded'}
-response = requests.post(request_url, data=params, headers=headers)
-if response:
-    print (response.json())
+    color = (0, 255, 0)
+    num = 0
+
+    while cap.isOpened():
+        ok, frame = cap.read()
+        print(frame)
+        if not ok:
+            break
+        time.sleep(1)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faceRects = classifier.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=3, minSize=(32, 32))
+
+        if len(faceRects) > 0:
+            for faceRect in faceRects:
+                x, y, w, h = faceRect
+
+                image_name = ('E:\\shengtuo_face_recognition\\face_pictures_2\\%s%07d.jpg' % (path_name, num))
+                image = frame[y:y + h, x:x + w]
+                cv2.imwrite(image_name, image)
+                num += 1
+
+                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(frame, ('%d' % num), (x + 30, y + 30), font, 1, (255, 0, 255), 4)
+        if num > max_num:
+            break
+
+        c = cv2.waitKey(10)
+        if c & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    print('Finished.')
+
+
+if __name__ == '__main__':
+    # print ('catching your face and writting into disk...')
+    getTrainingData('capture_video', 0, 'face_data', 1000000)
