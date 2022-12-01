@@ -1,7 +1,4 @@
-# encoding:utf-8
-
 import base64
-# encoding:utf-8
 import requests
 import cv2
 
@@ -28,11 +25,9 @@ def gettoken():
         return token
 
 
-
 '''
 健康码识别
 '''
-
 request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/health_code"
 camera = cv2.VideoCapture(0)  # 读取相机组件
 ret, frame = camera.read()  # 从摄像头读取图像 存放在frame
@@ -40,9 +35,12 @@ ret, frame = camera.read()  # 从摄像头读取图像 存放在frame
 img = base64.b64encode(frame)
 
 params = {"image": img}
+
 access_token = gettoken()
 request_url = request_url + "?access_token=" + access_token
+
 headers = {'content-type': 'application/x-www-form-urlencoded'}
+
 response = requests.post(request_url, data=params, headers=headers)
 if response:
     print(response.json())
