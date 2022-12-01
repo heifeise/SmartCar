@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import cv2
 
@@ -31,7 +30,6 @@ def detectFaceOpenCVDnn(net, frame):
     frameWidth = frame.shape[1]  # 图片水平尺寸 放在frameWidth
     net.setInput(blob)  # 输入预处理后的图像
     detections = net.forward()  # 分类预测 向前传播
-    bboxes = []
     ret = 0
     ROI = None
     """
@@ -42,16 +40,13 @@ def detectFaceOpenCVDnn(net, frame):
     """
     for i in range(detections.shape[2]):  # shape[2] 图片通道数
         confidence = detections[0, 0, i, 2]
-        # print(detections[0, 0, i, 2])
+
         if confidence > conf_threshold:  # 如果大于设定概率（检测到人脸）
             x1 = int(detections[0, 0, i, 3] * frameWidth)
             y1 = int(detections[0, 0, i, 4] * frameHeight)
             x2 = int(detections[0, 0, i, 5] * frameWidth)
             y2 = int(detections[0, 0, i, 6] * frameHeight)
-            # print(detections[0, 0, i, 3])
-            # print(detections[0, 0, i, 4])
-            # print(detections[0, 0, i, 5])
-            # print(detections[0, 0, i, 6])
+
             ROI = frame[y1:y2, x1:x2].copy()  # 把识别到的人脸框处来后 提取框内人脸 提高准确率
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # 框出人脸区域
             ret += 1
@@ -80,8 +75,7 @@ def if_have_mask(img):
     而相对于RGB空间，HSV空间能够非常直观的表达色彩的明暗，色调，以及鲜艳程度，
     方便进行颜色之间的对比
     """
-    # cv2.imshow('检测到人脸后第一次处理',hsv_img)
-    # cv2.waitKey(6000)
+
     lower_hsv_1 = np.array([0, 30, 30])  # 颜色范围低阈值
     upper_hsv_1 = np.array([40, 255, 255])  # 颜色范围高阈值
 
@@ -90,13 +84,9 @@ def if_have_mask(img):
 
     mask1 = cv2.inRange(hsv_img, lower_hsv_1, upper_hsv_1)
     mask2 = cv2.inRange(hsv_img, lower_hsv_2, upper_hsv_2)
-    # cv2.imshow("mask1", mask1)
-    # cv2.waitKey(6000)
-    # cv2.imshow("mask2", mask2)
-    # cv2.waitKey(6000)
+
     mask = mask1 + mask2
-    # cv2.imshow("mask1+mask2", mask)
-    # cv2.waitKey(6000)
+
     mask = cv2.blur(mask, (3, 3))
     """
     cv2.blur(img,ksize) 均值滤波
@@ -114,8 +104,7 @@ def if_have_mask(img):
     • 如果通信时出错，部分像素的值在传输时丢失，就会发生这种噪声。
     • 盐和胡椒噪声的成因可能是影像讯号受到突如其来的强烈干扰而产生等。例如失效的感应器导致像 素值为最小值，饱和的感应器导致像素值为最大值。
     """
-    # cv2.imshow("检测到人脸后第二次处理", mask)
-    # cv2.waitKey(6000)
+
 
     mask_color = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
 
@@ -151,11 +140,13 @@ def if_have_mask(img):
     print(cv2.contourArea(contours[0]))  # 输出轮廓面积最小数
     area = cv2.contourArea(contours[0])
     mask_rate = area / (img.shape[0] * img.shape[1]) # 口罩面积除以面部面积 查看口罩占面部大小
+    
     print(mask_rate)
+
     if mask_rate < 0.6:
-        return "Have Mask"
+        return "已佩戴口罩"
     else:
-        return "No Mask"
+        return "未佩戴口罩"
 
 
 if __name__ == '__main__':
