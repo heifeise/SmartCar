@@ -175,7 +175,8 @@ if __name__ == "__main__":
 
             camera.release()
 
-        time.sleep(3)  # 模拟图像处理所耗费的时间
+        # time.sleep(3)  # 模拟图像处理所耗费的时间
+        
         # print("开始测距")
         # test_distance(tools)
         # print("结束测距")
