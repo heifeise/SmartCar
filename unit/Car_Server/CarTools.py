@@ -1,6 +1,6 @@
 # -*- coding:UTF-8 -*-
 import time
-
+import Clock
 import RPi.GPIO as GPIO
 
 
@@ -31,6 +31,8 @@ class CarTools:
         self.ServoPin = 23
         self.camera_lr_pin = 11
         self.camera_ud_pin = 9
+        # 蜂鸣器引脚定义
+        self.buzzer = 8
         # 设置GPIO口为BCM编码方式
         GPIO.setmode(GPIO.BCM)
         # 忽略警告信息
@@ -61,6 +63,8 @@ class CarTools:
 
         GPIO.setup(self.camera_lr_pin, GPIO.OUT)
         GPIO.setup(self.camera_ud_pin, GPIO.OUT)
+
+        GPIO.setup(self.buzzer, GPIO.OUT)
 
         self.pwm_camera_lr = GPIO.PWM(self.camera_lr_pin, 50)
         self.pwm_camera_ud = GPIO.PWM(self.camera_ud_pin, 50)
@@ -144,35 +148,39 @@ class CarTools:
             time.sleep(0.01)
         return True
 
-    # 超声波测距(cm)
-    def distance_mature(self):
+    # 超声波测距(cm),测量指定位置的物体距离
+    def distance_mature(self, pos, pwm_servo):
+        self.servo_appointed_detection(pos, pwm_servo)  # 旋转舵机
+        time.sleep(0.3)
         GPIO.output(self.TrigPin, GPIO.HIGH)
         time.sleep(0.000015)
         GPIO.output(self.TrigPin, GPIO.LOW)
         while not GPIO.input(self.EchoPin):
             pass
-        t1 = time.time()
+        t = time.time()
         while GPIO.input(self.EchoPin):
             pass
         t2 = time.time()
         # print("distance is %d " % (((t2 - t1) * 340 / 2) * 100))
         time.sleep(0.01)
-        return ((t2 - t1) * 340 / 2) * 100
+        return ((t2 - t) * 340 / 2) * 100
 
     # 舵机旋转到指定角度
     def servo_appointed_detection(self, pos, pwm_servo):
-        for i in range(3):
+        for i in range(3):  # 重复发送三次信号
             pwm_servo.ChangeDutyCycle(2.5 + 10 * pos / 180)
 
+    # 摄像头左右转动
     def camera_lr_appointed_detection(self, pos):
         for i in range(1):
             self.pwm_camera_lr.ChangeDutyCycle(2.5 + 10 * pos / 180)
 
+    # 摄像头上下转动
     def camera_ud_appointed_detection(self, pos):
         for i in range(3):
             self.pwm_camera_ud.ChangeDutyCycle(2.5 + 10 * pos / 180)
 
-    # 温度测量（临时）
+    # 温度测量（暂定）
     def temperature(self, pos):
         return 36.5
 
@@ -182,34 +190,42 @@ class CarTools:
             return True
         return False
 
-    # 人与人之间的距离
-    # pos:参照的第一人的位置（角度）
-    def people_distance(self, lock_distance, pos=0, spacing=1):
+    """
+    人与人之间的距离
+    pos:参照的第一人的位置（角度）
+    lock_distance:线程同步锁
+    end:遍历查找第二人的范围
+    pos:第一人的位置
+    sep:两人之间的理想间隔
+    """
+    def people_distance(self, lock_distance, pos=0, end=50, sep=100):
         GPIO.setup(self.ServoPin, GPIO.OUT)
         pwm_servo = GPIO.PWM(self.ServoPin, 50)
         pwm_servo.start(0)
-        self.servo_appointed_detection(pos, pwm_servo)  # the position of first people
-        first_distance = self.distance_mature()
+        lock_distance.acquire()  # 上锁，防止其他线程抢占处理机
+        first_distance = self.distance_mature(pos, pwm_servo)  # 测量第一人的距离
+        lock_distance.release()  # 解锁
         second_distance = first_distance
-        for i in range(0, 50, 5):
+        for i in range(pos + 5, end, 5):
             if self.is_human(i):  # 判断位置i的物体是否是人类
-                lock_distance.acquire()  # 防止其他线程抢占处理机
-                self.servo_appointed_detection(i, pwm_servo)  # 转动舵机
-                lock_distance.release()  # 防止其他线程抢占处理机
-                temp = self.distance_mature()  # 测量当前方向上人类的距离
+                lock_distance.acquire()  # 上锁，防止其他线程抢占处理机
+                temp = self.distance_mature(i, pwm_servo)  # 测量当前方向上人类的距离
+                lock_distance.release()  # 解锁
                 if temp < second_distance:  # 选择记录最小的
                     second_distance = temp
-            time.sleep(0.3)
-        distance = (spacing + first_distance ** 2) ** (1 / 2)
-        self.servo_appointed_detection(0, pwm_servo)
-        time.sleep(0.3)
+        distance = (sep ** 2 + first_distance ** 2) ** (1 / 2)  # 小车与第二人的应有距离
+        # 置位
+        # self.servo_appointed_detection(0, pwm_servo)
+        # time.sleep(0.3)
         pwm_servo.stop()
         return first_distance, second_distance, distance
 
     def stop_pwm(self):
+        # 摄像头舵机置位
         self.camera_ud_appointed_detection(50)
         self.camera_lr_appointed_detection(90)
         time.sleep(2)
+        # 关闭脉宽调制
         self.pwm_ENA.stop()
         self.pwm_ENB.stop()
         self.pwm_camera_lr.stop()
@@ -232,7 +248,7 @@ class CarTools:
         # 0 1 X 0
         # 以上6种电平状态时小车原地右转
         # 处理右锐角和右直角的转动
-        if (TrackSensorLeftValue1 == False or TrackSensorLeftValue2 == False) and TrackSensorRightValue2 == False:
+        if (TrackSensorLeftValue1 is False or TrackSensorLeftValue2 is False) and TrackSensorRightValue2 is False:
             self.spin_right(speed, speed)
             time.sleep(0.08)
 
@@ -241,39 +257,49 @@ class CarTools:
         # 0 X 0 1
         # 0 X 1 0
         # 处理左锐角和左直角的转动
-        elif TrackSensorLeftValue1 == False and (
-                TrackSensorRightValue1 == False or TrackSensorRightValue2 == False):
+        elif TrackSensorLeftValue1 is False and (
+                TrackSensorRightValue1 is False or TrackSensorRightValue2 is False):
             self.spin_left(speed, speed)
             time.sleep(0.08)
 
         # 0 X X X
         # 最左边检测到
-        elif TrackSensorLeftValue1 == False:
+        elif TrackSensorLeftValue1 is False:
             self.spin_left(speed, speed)
 
         # X X X 0
         # 最右边检测到
-        elif TrackSensorRightValue2 == False:
+        elif TrackSensorRightValue2 is False:
             self.spin_right(speed, speed)
 
         # 四路循迹引脚电平状态
         # X 0 1 X
         # 处理左小弯
-        elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == True:
+        elif TrackSensorLeftValue2 is False and TrackSensorRightValue1 is True:
             self.left(0, speed)
 
         # 四路循迹引脚电平状态
         # X 1 0 X
         # 处理右小弯
-        elif TrackSensorLeftValue2 == True and TrackSensorRightValue1 == False:
+        elif TrackSensorLeftValue2 is True and TrackSensorRightValue1 is False:
             self.right(speed, 0)
 
         # 四路循迹引脚电平状态
         # X 0 0 X
         # 处理直线
-        elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == False:
+        elif TrackSensorLeftValue2 is False and TrackSensorRightValue1 is False:
             self.run(speed, speed)
         # 当为1 1 1 1时小车保持上一个小车运行状态
+
+    # 蜂鸣器响
+    def ring(self):
+        tim = Clock.Clock()
+        tim.start(3)
+        while not tim.is_stop():
+            GPIO.output(self.buzzer, GPIO.LOW)
+            time.sleep(0.5)
+            GPIO.output(self.buzzer, GPIO.HIGH)
+            time.sleep(0.5)
 
 
 if __name__ == "__main__":
@@ -286,5 +312,5 @@ if __name__ == "__main__":
     # tool.run(10,13)
     # tool.tracking()
     t1 = time.time()
-    tool.people_distance(pos=0, spacing=1)
+    tool.people_distance(pos=0, sep=1)
     print(time.time() - t1)

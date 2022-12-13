@@ -9,9 +9,10 @@ from Clock import Clock
 turn-left-speedleft-speedright:左转_左轮速度_右轮速度
 turn-right-speedleft-speedright:右转_左轮速度_右轮速度
 straight-speed:直行_速度
+stop:停止
 trackline:巡线模式
 manual:手动控制
-open-distance-mature:开启测距模块
+openDistanceMature:开启测距模块
 open-image-identy:开启图像识别
 """
 # 枚举报文类型
@@ -57,12 +58,13 @@ class Server:
         self.close = False
         self.tim.start(self.timeout)
 
+    # 新建线程，监听消息
     def get_from_client(self):
         th = threading.Thread(target=self.loop)
         th.setDaemon(True)  # 把主线程设置为守护线程
         th.start()
 
-    # 持续接收报文
+    # 循环体，持续接收报文
     def loop(self):
         while not self.close:
             # 接收1024个字节
@@ -70,9 +72,9 @@ class Server:
             if self.check_command(self.command_patten, receive):  # 如果是命令
                 print("接收到一条命令")
                 self.command_que.put(receive.split('_')[2])
-                self.send_to_client(self.get_reaction(receive))  # 向客户端发送反馈反馈
+                self.send_to_client(self.get_reaction(receive))  # 向客户端发送反馈
             if self.check_command(self.connect_patten, receive):  # 如果是连接确认信息
-                self.tim.start(self.timeout)  # 重新开始计时
+                self.tim.start(self.timeout)  # 重新开始连接计时
 
     # 一旦计时器停止，说明在规定时间内没有从客户端接收到反馈信息，则重新获取套接字，并且重启计时器
     def check_connect(self):
@@ -85,7 +87,7 @@ class Server:
         th.start()
 
     """
-    由接收到的信息得到应该返回给客户端的反馈信息
+    由接收到的信息生成应该返回给客户端的反馈信息
     receive:来自客户端的接受信息
     """
 
@@ -111,3 +113,26 @@ class Server:
         # 关闭为这个客户端服务的套接字，只要关闭了，就意味着为不能再为这个客户端服务了，如果还需要服务，只能再次重新连接
         self.client_socket.close()
         self.close = True  # 结束线程
+
+
+if __name__ == "__main__":
+    ip = '192.168.31.79'
+    port = 6666
+    time_out = 3
+    serv = Server(ip, port, time_out)
+    serv.get_client()  # 获取套接字
+    print("获取成功")
+    serv.get_from_client()  # 在子线程中获取消息
+    serv.check_connect()  # 在子线程中检查连接状态，可重新获取套接字
+    command = ""
+    # 模拟程序循环
+    while True:
+        # 其它功能代码
+        # queue线程安全，如果在队列为空时使用get会一直等待直到不为空
+        if not serv.command_que.empty():
+            command = serv.command_que.get()
+            print(command)  # 获取队列中的第一条命令
+        if command == "quit":
+            serv.close()
+            break
+        # 其它功能代码

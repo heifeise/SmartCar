@@ -13,12 +13,20 @@ class MessType:
 
 
 """
-报文格式：
-开始符_信息标识_信息_信息类别_结束符
+命令：解析
+turn-left-speedleft-speedright:左转_左轮速度_右轮速度
+turn-right-speedleft-speedright:右转_左轮速度_右轮速度
+straight-speed:直行_速度
+stop:停止
+trackline:巡线模式
+manual:手动控制
+openDistanceMature:开启测距模块
+open-image-identy:开启图像识别
 """
 
 # list_opencv = ['open-image-identy']  # opencv相关命令
-# list_action = ['turn-left', 'turn-right', 'straight', 'stop', 'trackline', 'manual', 'open-distance-mature', 'close-distance-mature', 'quit']  # 行动代码
+# list_action = ['turnleft', 'turnright', 'straight', 'stop', 'trackline', 'manual', 'openDistanceMature',
+#                'closeDistanceMature', 'quit']  # 行动代码
 class Client:
     def __init__(self, server_ip: str, server_port: int, time_out: 'int > 0' = 5):
         # 创建socket
@@ -95,6 +103,6 @@ class Client:
         th.start()
 
     # 关闭嵌套字
-    def _close(self):
+    def close_connection(self):
         self.tcp_client_socket.close()
         self.close = True

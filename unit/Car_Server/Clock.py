@@ -31,3 +31,14 @@ class Clock:
     # 查询计时器状态
     def is_stop(self):
         return self.__stop
+
+
+if __name__ == '__main__':
+    tim = Clock()
+    tim.start(1)
+    i = 0
+    while True:
+        if tim.is_stop():
+            i += 1
+            print(i)
+            tim.start(1)

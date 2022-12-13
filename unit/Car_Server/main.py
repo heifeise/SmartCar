@@ -4,6 +4,7 @@ from CarTools import CarTools
 from Server import Server
 import threading
 import time
+from visual_part.health_code.QR_Detectors import ColorDetector
 
 import cv2
 from visual_part.health_code.QR_Detectors import ColorDetector
@@ -17,7 +18,7 @@ straight-speed:直行_速度
 stop:停止
 trackline:巡线模式
 manual:手动控制
-open-distance-mature:开启测距模块
+openDistanceMature:开启测距模块
 open-image-identy:开启图像识别
 """
 
@@ -37,7 +38,7 @@ def trackline(tool, lock, lock_dist):
         lock_dist.release()
 
 
-# 移动、巡线与手动控制的切换
+# 小车移动控制、移动、巡线与手动控制的切换
 def car_action(tool, lock_dist, lock_track, que_action):
     while True:
         lock_dist.acquire()
@@ -69,18 +70,33 @@ def car_action(tool, lock_dist, lock_track, que_action):
 
 # 测量两人之间的距离
 def test_distance(tool, lock_dist):
+<<<<<<< HEAD
     if not tool.is_human(0):  # 如果此时垂直距离处的物体不是人类
         print("not human")
     # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
     message = tool.people_distance(lock_dist, pos=0, spacing=1)
     if message[1] <= message[2]:  # 如果与第二人的距离小于理想距离
         Buzzer()  # 发出提示音
+=======
+    # 通过设置小车与第一人之间的距离预设值，辅助图像识别判断
+    cost = 25  # 误差(cm)
+    preset = 200
+    value = abs(preset - tool.people_distance(0, 0, 0)[0])
+    # 如果此时垂直距离处的物体不是人类或者该人距离小车过近或过远
+    if not tool.is_human(0) or value <= cost:
+        print("not destination")
+        return
+    message = tool.people_distance(lock_dist, pos=0, sep=100)  # pos:第一人的位置（角度），sep:设定的两人的理想间隔
+    if message[1] < message[2]:  # 如果与第二人的距离小于理想距离
+        buzzer(tool)  # 发出提示音
+>>>>>>> feature/merge
     else:
         print("normal")
 
 
-def Buzzer():
-    print("to close")
+def buzzer(tool):
+    tool.ring()
+    print("too close")
 
 
 def get_command(server, lock_dist, que_action, que_opencv):
@@ -147,12 +163,13 @@ if __name__ == "__main__":
 
     # lock_track.release()  # 开启巡线
     # 程序循环
-
+    #
     while True:
         commands = ""
         if not opencv_que.empty():
             commands = opencv_que.get()
             print(commands)  # 此处放置图像处理代码
+<<<<<<< HEAD
 
         while True:
             camera = cv2.VideoCapture(0)  # 开摄像头
@@ -180,3 +197,15 @@ if __name__ == "__main__":
         # test_distance(tools)
         # print("结束测距")
         # 尝试放到线程中执行
+=======
+        # time.sleep(3)  # 模拟图像处理所耗费的时间
+        time.sleep(0.3)
+        camera = cv2.VideoCapture(0)
+        is_got_image, image = camera.read()
+        if is_got_image:
+            detector = ColorDetector(image_input=image)
+            if detector.frame() is not None:
+                result = detector.get_result()
+                print(result)
+        camera.release()
+>>>>>>> feature/merge
