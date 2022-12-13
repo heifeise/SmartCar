@@ -150,10 +150,10 @@ def if_have_mask(img):
     contours.sort(key=cnt_area, reverse=True)  # 按照轮廓面积升序排序
     print(cv2.contourArea(contours[0]))  # 输出轮廓面积最小数
     area = cv2.contourArea(contours[0])
-    """yj：最小的轮廓面积除以脸部轮廓面积，不一定就是用口罩轮廓来做分子"""
+
     mask_rate = area / (img.shape[0] * img.shape[1])  # 口罩面积除以面部面积 查看口罩占面部大小
     print(mask_rate)
-    """yj: 我觉得这里0.5可能合适一点"""
+
     if mask_rate < 0.6:
         return "Have Mask"
     else:

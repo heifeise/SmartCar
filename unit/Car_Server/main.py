@@ -34,7 +34,7 @@ def trackline(tool, lock, lock_dist):
         lock_dist.release()
 
 
-# 移动、巡线与手动控制的切换
+# 小车移动控制、移动、巡线与手动控制的切换
 def car_action(tool, lock_dist, lock_track, que_action):
     while True:
         lock_dist.acquire()
