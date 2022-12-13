@@ -70,26 +70,17 @@ def car_action(tool, lock_dist, lock_track, que_action):
 
 # 测量两人之间的距离
 def test_distance(tool, lock_dist):
-<<<<<<< HEAD
-    if not tool.is_human(0):  # 如果此时垂直距离处的物体不是人类
-        print("not human")
-    # pos:第一人的位置（角度），spacing:设定的两人的理想间隔
-    message = tool.people_distance(lock_dist, pos=0, spacing=1)
-    if message[1] <= message[2]:  # 如果与第二人的距离小于理想距离
-        Buzzer()  # 发出提示音
-=======
-    # 通过设置小车与第一人之间的距离预设值，辅助图像识别判断
+    # 通过设置小车与第一人之间的距离预设值(不应距离过近)，辅助图像识别判断
     cost = 25  # 误差(cm)
-    preset = 200
-    value = abs(preset - tool.people_distance(0, 0, 0)[0])
+    preset = 100  # 预设值(cm)
+    value = abs(preset - tool.people_distance(lock_dist, pos=0, sep=0)[0])
     # 如果此时垂直距离处的物体不是人类或者该人距离小车过近或过远
-    if not tool.is_human(0) or value <= cost:
-        print("not destination")
+    if not tool.is_human(0) or value >= cost:
+        print("no target")
         return
     message = tool.people_distance(lock_dist, pos=0, sep=100)  # pos:第一人的位置（角度），sep:设定的两人的理想间隔
     if message[1] < message[2]:  # 如果与第二人的距离小于理想距离
         buzzer(tool)  # 发出提示音
->>>>>>> feature/merge
     else:
         print("normal")
 
@@ -164,49 +155,27 @@ if __name__ == "__main__":
     # lock_track.release()  # 开启巡线
     # 程序循环
     #
+    
     while True:
         commands = ""
         if not opencv_que.empty():
             commands = opencv_que.get()
             print(commands)  # 此处放置图像处理代码
-<<<<<<< HEAD
+        camera = cv2.VideoCapture(0)  # 开摄像头
+        is_got_image, image = camera.read()  # 读图
+        if is_got_image:  # 读到正确图
+            is_have_face, frame = detectFaceOpenCVDnn(net, image)
+            # [1] OpenCVDnn模型判断image是否包含人脸，是则进入口罩识别
+            if is_have_face == 1:
+                result = if_have_mask(frame)
+            # [2] 健康码颜色检测
+            else:
+                detector = ColorDetector(image_input=image)  # 调用颜色检测实现细节类
+                if detector.frame() is not None:
+                    result = detector.get_result()  # 结果
+                    print(result)  # 测试用    
+        camera.release() 
 
-        while True:
-            camera = cv2.VideoCapture(0)  # 开摄像头
-            is_got_image, image = camera.read()  # 读图
+            
 
-            if is_got_image:  # 读到正确图
-                is_have_face, frame = detectFaceOpenCVDnn(net, image)
-
-                # [1] OpenCVDnn模型判断image是否包含人脸，是则进入口罩识别
-                if is_have_face == 1:
-                    result = if_have_mask(frame)
-                # [2] 健康码颜色检测
-                else:
-                    detector = ColorDetector(image_input=image)  # 调用颜色检测实现细节类
-
-                    if detector.frame() is not None:
-                        result = detector.get_result()  # 结果
-
-            print(result)  # 测试用
-
-            camera.release()
-
-        # time.sleep(3)  # 模拟图像处理所耗费的时间
-        
-        # print("开始测距")
-        # test_distance(tools)
-        # print("结束测距")
-        # 尝试放到线程中执行
-=======
-        # time.sleep(3)  # 模拟图像处理所耗费的时间
-        time.sleep(0.3)
-        camera = cv2.VideoCapture(0)
-        is_got_image, image = camera.read()
-        if is_got_image:
-            detector = ColorDetector(image_input=image)
-            if detector.frame() is not None:
-                result = detector.get_result()
-                print(result)
-        camera.release()
->>>>>>> feature/merge
+            
