@@ -1,7 +1,5 @@
 import cv2
-from pyzbar.pyzbar import decode
 from .details import ColorDetect as detail_c_d
-
 
 
 class ColorDetector:
