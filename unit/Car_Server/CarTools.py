@@ -167,7 +167,7 @@ class CarTools:
 
     # 舵机旋转到指定角度
     def servo_appointed_detection(self, pos, pwm_servo):
-        for i in range(3):
+        for i in range(3):  # 重复发送三次信号
             pwm_servo.ChangeDutyCycle(2.5 + 10 * pos / 180)
 
     # 摄像头左右转动
@@ -248,7 +248,7 @@ class CarTools:
         # 0 1 X 0
         # 以上6种电平状态时小车原地右转
         # 处理右锐角和右直角的转动
-        if (TrackSensorLeftValue1 == False or TrackSensorLeftValue2 == False) and TrackSensorRightValue2 == False:
+        if (TrackSensorLeftValue1 is False or TrackSensorLeftValue2 is False) and TrackSensorRightValue2 is False:
             self.spin_right(speed, speed)
             time.sleep(0.08)
 
@@ -257,37 +257,37 @@ class CarTools:
         # 0 X 0 1
         # 0 X 1 0
         # 处理左锐角和左直角的转动
-        elif TrackSensorLeftValue1 == False and (
-                TrackSensorRightValue1 == False or TrackSensorRightValue2 == False):
+        elif TrackSensorLeftValue1 is False and (
+                TrackSensorRightValue1 is False or TrackSensorRightValue2 is False):
             self.spin_left(speed, speed)
             time.sleep(0.08)
 
         # 0 X X X
         # 最左边检测到
-        elif TrackSensorLeftValue1 == False:
+        elif TrackSensorLeftValue1 is False:
             self.spin_left(speed, speed)
 
         # X X X 0
         # 最右边检测到
-        elif TrackSensorRightValue2 == False:
+        elif TrackSensorRightValue2 is False:
             self.spin_right(speed, speed)
 
         # 四路循迹引脚电平状态
         # X 0 1 X
         # 处理左小弯
-        elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == True:
+        elif TrackSensorLeftValue2 is False and TrackSensorRightValue1 is True:
             self.left(0, speed)
 
         # 四路循迹引脚电平状态
         # X 1 0 X
         # 处理右小弯
-        elif TrackSensorLeftValue2 == True and TrackSensorRightValue1 == False:
+        elif TrackSensorLeftValue2 is True and TrackSensorRightValue1 is False:
             self.right(speed, 0)
 
         # 四路循迹引脚电平状态
         # X 0 0 X
         # 处理直线
-        elif TrackSensorLeftValue2 == False and TrackSensorRightValue1 == False:
+        elif TrackSensorLeftValue2 is False and TrackSensorRightValue1 is False:
             self.run(speed, speed)
         # 当为1 1 1 1时小车保持上一个小车运行状态
 

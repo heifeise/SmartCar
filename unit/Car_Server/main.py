@@ -4,7 +4,7 @@ from CarTools import CarTools
 from Server import Server
 import threading
 import time
-
+from visual_part.health_code.QR_Detectors import ColorDetector
 
 """
 命令：解析
