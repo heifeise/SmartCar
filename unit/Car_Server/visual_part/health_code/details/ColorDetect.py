@@ -79,6 +79,36 @@ def color_detect(frame_input):
         color_result = "purple"
 
     return color_result
+    """
+    yj,2022/12/16
+    red = 0
+    green = 0
+    yellow = 0
+    scanLine = 500
+    i = 0
+    for line in hsv_frame:
+        i += 1
+        if i > scanLine:
+            break
+        for pixel in line:
+            hue_value = pixel[0]
+            if 0 < hue_value < 25 or 156 < hue_value < 180:
+                red += 1
+            elif 26 < hue_value < 34:
+                yellow += 1
+            elif 35 < hue_value < 99:
+                green += 1
+    if red + green + yellow == 0:
+        return "Undefined"
+    else:
+        result = max(red, yellow, green)
+        if  result == red:
+            return "RED"
+        if result == yellow:
+            return "YELLOW"
+        if result == green:
+            return "GREEN"
+    """
 
 
 # 单模块测试
